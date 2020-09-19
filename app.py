@@ -14,6 +14,7 @@ UPLOAD_FOLDER = "data/"
 ALLOWED_EXTENSIONS = set(['pdf'])
 
 app = Flask(__name__)
+app.secret_key = '1242341515136'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
@@ -53,5 +54,4 @@ def upload_file():
 
 
 if __name__ == '__main__':
-	# app.secret_key = '1242341515136'
-	app.run(debug=True)
+    app.run(debug=True)
