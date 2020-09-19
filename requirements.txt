@@ -1,8 +1,4 @@
 flask
 pdftotext
 gunicorn
-itsdangerous
-Jinja2
-MarkupSafe
-Werkzeug
-Click
+
