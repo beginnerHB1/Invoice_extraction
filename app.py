@@ -1,6 +1,5 @@
 from flask import Flask, flash, request,render_template,  redirect, url_for
 import json
-from werkzeug.utils import secure_filename
 import os
 from all_functions import *
 
@@ -53,5 +52,5 @@ def upload_file():
 
 
 if __name__ == '__main__':
-	app.secret_key = '1242341515136'
+	# app.secret_key = '1242341515136'
 	app.run(debug=True)
