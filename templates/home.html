@@ -1,0 +1,19 @@
+{% extends 'index.html' %}
+
+
+
+{% block content %}
+<br>
+<div style="margin-right: 500px">
+	<br>
+	<title>Upload new File</title>
+	<h1 >Upload new File</h1>
+	<form method=post style="margin-top: 50px" enctype=multipart/form-data>
+	  <input type=file style="font-size: 20px" name=file >
+	  <br>
+	  <input type=submit class="btn btn-success" style=" font-size: 20px" value=Run>
+	 <!--  <a href="/output_list"><input type="button" value="run"></a> -->
+	</form>
+</div>
+
+{% endblock %}
