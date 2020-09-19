@@ -53,5 +53,5 @@ def upload_file():
 
 
 if __name__ == '__main__':
-	# app.secret_key = '1242341515136'
+	app.secret_key = '1242341515136'
 	app.run(debug=True)
