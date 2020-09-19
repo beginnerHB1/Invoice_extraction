@@ -1,1 +1,1 @@
-web: sh setup.sh && streamlit run app.py
+web: apt install build-essential libpoppler-cpp-dev pkg-config python3-dev && python app.py
