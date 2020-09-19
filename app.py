@@ -1,14 +1,57 @@
-import streamlit as st
+from flask import Flask, flash, request,render_template,  redirect, url_for
+import json
+from werkzeug.utils import secure_filename
+import os
+from all_functions import *
 
-activities = ["About", "PDF1", "PDF2", "PDF3"]
-choice = st.sidebar.selectbox("Select Site", activities)
+
+try:
+    os.mkdir("data")
+except:
+    pass
+
+UPLOAD_FOLDER = "data/"
+ALLOWED_EXTENSIONS = set(['pdf'])
+
+app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-if choice == 'PDF1':
-    st.title("1")
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        # try:
 
-elif choice == "PDF2":
-    st.title("2")
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        global filename
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            flash('file {} saved'.format(file.filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-elif choice == "PDF3":
-    st.title("3")
+            # file1 = open("/home/senseque/Desktop/new/testing/myfile.txt","w")
+            # file1.write(f"{filename}")
+            # file1.close()
+            z = extract_detail(f"data/{filename}")
+            print(filename)
+            return z
+
+    return render_template('home.html')
+
+
+if __name__ == '__main__':
+	app.secret_key = '1242341515136'
+	app.run(debug=True)
