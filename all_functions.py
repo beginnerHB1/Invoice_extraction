@@ -1,4 +1,5 @@
 import pdftotext
+import re 
 
 def remove_header_footer(lst):
     for i in range(len(lst)):
