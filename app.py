@@ -3,7 +3,7 @@ import json
 import os
 from werkzeug.utils import secure_filename
 from all_functions import *
-
+from australia import *
 
 try:
     os.mkdir("data")
