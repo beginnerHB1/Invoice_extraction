@@ -1,6 +1,32 @@
 import pdftotext
 
 #to find Invoice and UAC number
+def remove_header_footer(lst):
+    for i in range(len(lst)):
+        #footer
+        if "A Finance charge will be imposed by use of a periodic rate of one and one−half percent (1 1/2 %)" in lst[i]:
+            lst.remove(lst[i])
+        elif "annual percentage rate of eighteen percent (18%), on balances over thirty (30) days old." in lst[i]:
+            lst.remove(lst[i])
+        #header
+        elif "INVOICE" == lst[i].strip():
+            lst[i] = re.sub("INVOICE", " ", lst[i])
+        elif "UniCarriers Americas Corporation" in lst[i]:
+            lst[i] = re.sub("UniCarriers Americas Corporation", " ", lst[i])
+        elif "240 N. Prospect Street − Marengo, IL 60152−3298" in lst[i]:
+            lst[i] = re.sub("240 N. Prospect Street − Marengo, IL 60152−3298", " ", lst[i])
+        elif "Remit To: P.O.Box 70700 − Chicago, IL 60673−0700" in lst[i]:
+            lst[i] = re.sub("Remit To: P.O.Box 70700 − Chicago, IL 60673−0700", " ", lst[i])
+
+        elif "Billing Inquiries (815) 568−0061" in lst[i]:
+            lst[i] = lst[i].split("568−0061")[-1]
+            break
+
+    for i in lst:
+        if len(i.strip()) == 0:
+            lst.remove(i)
+    return lst
+
 def find_invoice_uac_no(lst):
     '''
     lst : splited list of all extracted text wit "\n"
