@@ -1,7 +1,5 @@
 import pdftotext
-import re
 
-#to find Invoice and UAC number
 def remove_header_footer(lst):
     for i in range(len(lst)):
         #footer
@@ -28,13 +26,14 @@ def remove_header_footer(lst):
             lst.remove(i)
     return lst
 
+#to find Invoice and UAC number
 def find_invoice_uac_no(lst):
     '''
     lst : splited list of all extracted text wit "\n"
     '''
     for i in lst:
         if "Invoice Number" in i:
-            invoice_index =  lst.index(i) + 2
+            invoice_index =  lst.index(i) +1
         elif "UCA Order No." in i:
             uac_index = lst.index(i) + 1
 
@@ -172,8 +171,10 @@ def create_json(lst_det):
             "Mandotory":lst_det[2],
             "Sample Value":lst_det[3]}
 
+
 def extract_detail(PDF):
     json_dct = {"Header":[],"Sold To":[],"Ship To":[], "Line Details (Repeated Segment)":[], "Invoice Amount Details":[]}
+    bit = False
     with open(PDF, "rb") as f:
         pdf = pdftotext.PDF(f)
 
@@ -183,46 +184,53 @@ def extract_detail(PDF):
 
     #spliting from new line
     lst = data.split("\n")
-    x = remove_header_footer(lst)
-    invoice_index, uac_index = find_invoice_uac_no(x)
-    try:
-        json_dct["Header"].append(create_json(["Invoice Number", len(x[invoice_index].strip()), "yes", x[invoice_index].strip()]))
-        json_dct["Header"].append(create_json(["UCA Order No.", len(x[uac_index].strip().split()[-1]), "yes", x[uac_index].strip().split()[-1]]))
+    for i in lst:
+        if "UniCarriers Americas Corporation" in i:
+            bit = True
 
-        ind = find_invoice_date_table(x)
+    if bit:        
+        x = remove_header_footer(lst)
 
-        json_dct["Header"].append(create_json(["Invoice Date",  "mmddyyyy", "yes", x[ind].strip().split()[0]]))
-        json_dct["Header"].append(create_json(["Customer Order Number", len(x[ind].strip().split()[1]), "yes", x[ind].strip().split()[1]]))
-        json_dct["Header"].append(create_json(["Payment Terms", len(" ".join(x[ind].strip().split()[2:])), "yes", " ".join(x[ind].strip().split()[2:])]))
-        json_dct["Header"].append(create_json(["Ship Date", "mmddyyyy", "yes", x[ind+2].strip().split()[0]]))
-        json_dct["Header"].append(create_json(["Ship Via", len(x[ind+2].strip().split()[1]), "yes", x[ind+2].strip().split()[1]]))
-        json_dct["Header"].append(create_json(["Shipment Terms", len(x[ind+2].strip().split()[2]), "yes", x[ind+2].strip().split()[2]]))
-    except:
-        json_dct["Header"] = []
+        try:
+            json_dct["Header"].append(create_json(["Invoice Number", len(x[invoice_index].strip()), "yes", x[invoice_index].strip()]))
+            json_dct["Header"].append(create_json(["UCA Order No.", len(x[uac_index].strip().split()[-1]), "yes", x[uac_index].strip().split()[-1]]))
 
-    try:
-        address_1, address_2 = add_1_2(x)
-        address_1 = "".join(address_1.split("Sold To:")).strip()
-        address_2 = "".join(address_2.split("Ship To:")).strip()
-        json_dct["Sold To"].append(create_json(["Sold to","", "yes", address_1]))
-        json_dct["Ship To"].append(create_json(["Ship to","", "yes", address_2]))
-    except:
-        json_dct["Sold To"] = []
-        json_dct["Ship To"] = []
+            ind = find_invoice_date_table(x)
 
-    try:
-        line_details_under_tabe = line_details(x)
-        for i in line_details_under_tabe:
-            for j in list(i.keys()):
-                json_dct["Line Details (Repeated Segment)"].append(create_json([j, len(i[j]), "yes", i[j]]))
+            json_dct["Header"].append(create_json(["Invoice Date",  "mmddyyyy", "yes", x[ind].strip().split()[0]]))
+            json_dct["Header"].append(create_json(["Customer Order Number", len(x[ind].strip().split()[1]), "yes", x[ind].strip().split()[1]]))
+            json_dct["Header"].append(create_json(["Payment Terms", len(" ".join(x[ind].strip().split()[2:])), "yes", " ".join(x[ind].strip().split()[2:])]))
+            json_dct["Header"].append(create_json(["Ship Date", "mmddyyyy", "yes", x[ind+2].strip().split()[0]]))
+            json_dct["Header"].append(create_json(["Ship Via", len(x[ind+2].strip().split()[1]), "yes", x[ind+2].strip().split()[1]]))
+            json_dct["Header"].append(create_json(["Shipment Terms", len(x[ind+2].strip().split()[2]), "yes", x[ind+2].strip().split()[2]]))
+        except:
+            json_dct["Header"] = []
 
-        dct = invoice_amount_details(x)
-        for i in list(dct.keys()):
-            if i == "PAYMENT DUE BY":
-                json_dct["Invoice Amount Details"].append(create_json([i, "mmddyyyy", "yes", dct[i]]))
-            else:
-                json_dct["Invoice Amount Details"].append(create_json([i, len(dct[i]), "yes", dct[i]]))
-    except:
-        json_dct["Invoice Amount Details"] = []
-        
-    return json_dct
+        try:
+            address_1, address_2 = add_1_2(x)
+            address_1 = "".join(address_1.split("Sold To:")).strip()
+            address_2 = "".join(address_2.split("Ship To:")).strip()
+            json_dct["Sold To"].append(create_json(["Sold to","", "yes", address_1]))
+            json_dct["Ship To"].append(create_json(["Ship to","", "yes", address_2]))
+        except:
+            json_dct["Sold To"] = []
+            json_dct["Ship To"] = []
+
+        try:
+            line_details_under_tabe = line_details(x)
+            for i in line_details_under_tabe:
+                for j in list(i.keys()):
+                    json_dct["Line Details (Repeated Segment)"].append(create_json([j, len(i[j]), "yes", i[j]]))
+
+            dct = invoice_amount_details(x)
+            for i in list(dct.keys()):
+                if i == "PAYMENT DUE BY":
+                    json_dct["Invoice Amount Details"].append(create_json([i, "mmddyyyy", "yes", dct[i]]))
+                else:
+                    json_dct["Invoice Amount Details"].append(create_json([i, len(dct[i]), "yes", dct[i]]))
+        except:
+            json_dct["Invoice Amount Details"] = []
+            
+        return json_dct
+    else:
+        return json_dct
