@@ -1,4 +1,5 @@
 import pdftotext
+import re
 
 #to find Invoice and UAC number
 def remove_header_footer(lst):
