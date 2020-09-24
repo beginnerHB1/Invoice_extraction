@@ -46,10 +46,13 @@ def upload_file():
             # file1 = open("/home/senseque/Desktop/new/testing/myfile.txt","w")
             # file1.write(f"{filename}")
             # file1.close()
-            z = extract_detail(f"data/{filename}")
-            print(filename)
-            return z
-
+            try:
+                z = extract_detail(f"data/{filename}")
+                print(filename)
+                return z
+            except Exception as e:
+                return {"error_message": e}
+            
     return render_template('home.html')
 
 
@@ -78,10 +81,12 @@ def upload_file2():
             # file1 = open("/home/senseque/Desktop/new/testing/myfile.txt","w")
             # file1.write(f"{filename}")
             # file1.close()
-            z = find_details_australia(f"data/{filename}")
-            # print(filename)
-            return z
-
+            try:
+                z = find_details_australia(f"data/{filename}")
+                # print(filename)
+                return z
+            except Exception as e:
+                return {"error_message": e}
     return render_template('home.html')
 
 
