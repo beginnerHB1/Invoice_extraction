@@ -6,6 +6,7 @@ def create_json(lst_det):
     if "DATE" in lst_det[0]:
         final_2 = "mmddyyyy"
         final_1 = lst_det[-1]
+
     elif type(lst_det[-1]) == list:
         final_2 = len("-".join(lst_det[-1]))
         final_1 = "-".join(lst_det[-1])
@@ -98,15 +99,20 @@ def find_details_australia(pdf):
     for i in range(len(pdf)):
         data += "\n" +  pdf[i]
 
-    dct = find_regex(data)
-    for i in list(dct.keys()):
-        json_dct["Header"].append(create_json([i,"yes",
-                                                   dct[i]]
-                                                  ))
+    try:
+        dct = find_regex(data)
+        for i in list(dct.keys()):
+            json_dct["Header"].append(create_json([i,"yes",
+                                                       dct[i]]
+                                                      ))
+    except:
+        json_dct["Header"] = []
 
-    table = find_table_details(data)
-    json_dct["Line Details (Repeated Segment)"] = table
-
+    try:
+        table = find_table_details(data)
+        json_dct["Line Details (Repeated Segment)"] = table
+    except:
+        json_dct["Line Details (Repeated Segment)"] = []
 
     x = data.split("\n")
     # headers
@@ -121,31 +127,43 @@ def find_details_australia(pdf):
         elif "SUPP. CASE NO" in x[i]:
             x[i] = x[i][:x[i].index("SUPP. CASE NO")]
 
-        elif "INVOICE CURRENCY" in x[i]:
-            json_dct["Header"].append(create_json(["INVOICE_CURRENCY","yes",
-                                        x[i].strip().split(":")[-1]]
-                                        ))
-            x[i] = x[i][:x[i].index("INVOICE")]
-            # print(x[i])
-
         elif "DATE INV/DEL" in x[i]:
             x[i] = x[i][:x[i].index("DATE INV/DEL")]
 
+        elif "INVOICE CURRENCY" in x[i]:
+            try:
+                json_dct["Header"].append(create_json(["INVOICE_CURRENCY","yes",
+                                            x[i].strip().split(":")[-1]]
+                                            ))
+                x[i] = x[i][:x[i].index("INVOICE")]
+            # print(x[i])
+            except:
+                continue
+
 
         elif "CASE TOTAL" in x[i]:
-            json_dct["Invoice Amount Details"].append(create_json(["Case_total","yes",
-                                        x[i].strip().split(":")[-1]]
-                                        ))
+            try:
+                json_dct["Invoice Amount Details"].append(create_json(["Case_total","yes",
+                                            x[i].strip().split(":")[-1]]
+                                            ))
+            except:
+                continue
 
         elif "GST @10%" in x[i]:
-            json_dct["Invoice Amount Details"].append(create_json(["GST @10%","yes",
-                                        x[i].strip().split(":")[-1]]
-                                        ))
+            try:
+                json_dct["Invoice Amount Details"].append(create_json(["GST @10%","yes",
+                                            x[i].strip().split(":")[-1]]
+                                            ))
+            except:
+                continue
 
         elif "INVOICE TOTAL" in x[i]:
-            json_dct["Invoice Amount Details"].append(create_json(["INVOICE TOTAL","yes",
-                                        x[i].strip().split(":")[-1]]
-                                        ))
+            try:
+                json_dct["Invoice Amount Details"].append(create_json(["INVOICE TOTAL","yes",
+                                            x[i].strip().split(":")[-1]]
+                                            ))
+            except:
+                continue
 
     for i in range(len(x)):
         if "DELIVERED TO" in x[i]:
@@ -163,14 +181,16 @@ def find_details_australia(pdf):
             x[i] = x[i].strip()
             receiver_end_index = x.index(x[i])
             table_start_index = x.index(x[i])
-
-    lst = [i.strip() for i in x[deliver_start_index:deliver_end_index]]
-    json_dct["Delivered To"].append(create_json(["Delivered To","yes",
-                            " ".join(lst)]
-                            ))
-    lst = [i.strip() for i in x[receiver_start_index: receiver_end_index]]
-    json_dct["Mail To"].append(create_json(["MAIL To","yes",
-                            " ".join(lst)]
-                            ))
+    try:
+        lst = [i.strip() for i in x[deliver_start_index:deliver_end_index]]
+        json_dct["Delivered To"].append(create_json(["Delivered To","yes",
+                                " ".join(lst)]
+                                ))
+        lst = [i.strip() for i in x[receiver_start_index: receiver_end_index]]
+        json_dct["Mail To"].append(create_json(["MAIL To","yes",
+                                " ".join(lst)]
+                                ))
+    except:
+        pass
 
     return json_dct
