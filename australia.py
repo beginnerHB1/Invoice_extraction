@@ -1,7 +1,4 @@
-import pdftotext
-import re
-
-
+#australia
 def create_json(lst_det):
     if "DATE" in lst_det[0]:
         final_2 = "mmddyyyy"
@@ -25,16 +22,28 @@ def find_regex(text):
                     "abn" : "[0-9]{2} [0-9]{3} [0-9]{3} [0-9]{3}",
                     "date" : "[0-9]{1,2}[\/]{1}[0-9]{2}[\/]{1}[0-9]{4}",
                     "phone_fax" : "[0-9]{2} [0-9]{4} [0-9]{4}",
-                    "invoice_num" : "[A-Z][0-9]{7}",
+                    # "invoice_num" : "[A-Z][0-9]{7}",
                     "case_number" : " [0-9]{8}\n"
                     }
 
     for i in list(pattern_dct.keys()):
+        # try:
         dct[i] =  re.findall(pattern_dct[i], text)
-
+        # except:
+        #     dct[i] =  ""
     dct["phone"] = dct["phone_fax"][0]
     dct["fax"] = dct["phone_fax"][1]
     del dct["phone_fax"]
+
+    for i in text.split("\n"):
+        if "TAX INVOICE" in i:
+            invoice_num = i.split("TAX INVOICE")[-1].strip()
+            break
+        elif "COMMERCIAL INVOICE" in i:
+            invoice_num = i.split("COMMERCIAL INVOICE")[-1].strip()
+            break
+    dct["invoice_num"] = invoice_num
+
     return dct
 
 def find_table_details(text):
@@ -65,20 +74,33 @@ def find_table_details(text):
                     else:
                         pass
             k = 0
+            # print(lst)
             for i,j in enumerate(lst):
                 if "---------------" not in j:
-                    if len(j) == 7:
-                        details_table.append(create_json([f"PART NUMBER_{i}", "yes", j[0]]))
-                        details_table.append(create_json([f"DO NUMBER_{i}", "yes", j[1]]))
-                        details_table.append(create_json([f"HARMONISED_{i}", "yes", j[2]]))
-                        details_table.append(create_json([f"COUNTRY_{i}", "yes", j[3]]))
-                        details_table.append(create_json([f"QUANTITY UNIT_{i}", "yes",j[4]]))
-                        details_table.append(create_json([f"UNIT VALUE_{i}", "yes", j[5]]))
-                        details_table.append(create_json([f"AMOUNT_{i}", "yes", j[6]]))
-                    elif len(j) == 2:
-                        details_table.append(create_json([f"Description_{k}", "yes", j[0]]))
-                        details_table.append(create_json([f"cus_ord_{k}", "yes", j[1]]))
-            k += 1
+                    if len(j) >= 7:
+                        details_table.append(create_json([f"PART NUMBER_{k}", "yes", j[0]]))
+                        details_table.append(create_json([f"DO NUMBER_{k}", "yes", j[1]]))
+                        details_table.append(create_json([f"HARMONISED_{k}", "yes", j[2]]))
+                        details_table.append(create_json([f"COUNTRY_{k}", "yes", " ".join(j[3:-3])]))
+                        details_table.append(create_json([f"QUANTITY UNIT_{k}", "yes",j[-3]]))
+                        details_table.append(create_json([f"UNIT VALUE_{k}", "yes", j[-2]]))
+                        details_table.append(create_json([f"AMOUNT_{k}", "yes", j[-1]]))
+
+                        if len(lst[i+1]) == 2:
+                            details_table.append(create_json([f"Description_{k}", "yes", lst[i+1][0]]))
+                            details_table.append(create_json([f"cus_ord_{k}", "yes", lst[i+1][1]]))
+                            k += 1
+                        elif len(lst[i+1]) == 3:
+                            details_table.append(create_json([f"Description_{k}", "yes", " ".join(lst[i+1][0:2])]))
+                            details_table.append(create_json([f"cus_ord_{k}", "yes",lst[i+1][2]]))
+                            k += 1
+                    # elif len(j) == 2:
+                        # details_table.append(create_json([f"Description_{k}", "yes", j[0]]))
+                        # details_table.append(create_json([f"cus_ord_{k}", "yes", j[1]]))
+                    # elif len(j) == 3:
+                        # details_table.append(create_json([f"Description_{k}", "yes", " ".join(j[0:2])]))
+                        # details_table.append(create_json([f"cus_ord_{k}", "yes", j[2]]))
+                        
             return details_table
         else:
             False
@@ -99,14 +121,25 @@ def find_details_australia(pdf):
     for i in range(len(pdf)):
         data += "\n" +  pdf[i]
 
-    try:
-        dct = find_regex(data)
-        for i in list(dct.keys()):
-            json_dct["Header"].append(create_json([i,"yes",
-                                                       dct[i]]
-                                                      ))
-    except:
-        json_dct["Header"] = []
+    # try:
+    dct = find_regex(data)
+    for i in list(dct.keys()):
+        json_dct["Header"].append(create_json([i,"yes",
+                                                    dct[i]]
+                                                    ))
+        
+    cus_no = data[data.index("CUSTOMER NO"): data.index("DELIVERED TO")]
+    if "ABN" in cus_no:
+        final_cus_no = cus_no.split("ABN")[0]
+    else:
+        final_cus_no = cus_no.split(":")[-1].strip()
+
+    json_dct["Header"].append(create_json(["customer_no","yes",
+                                        final_cus_no]
+                                        ))
+
+    # except:
+    #     json_dct["Header"] = []
 
     try:
         table = find_table_details(data)
