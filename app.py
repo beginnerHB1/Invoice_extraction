@@ -1,6 +1,5 @@
 
 from flask import Flask, flash, request,render_template,  redirect, url_for, jsonify
-from flask_cors import CORS
 import json
 from australia import *
 from unicareer import *
@@ -12,7 +11,7 @@ ALLOWED_EXTENSIONS = set(['pdf'])
 
 app = Flask(__name__)
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-cors = CORS(app)
+
 
 def allowed_file(filename):
     return '.' in filename and \
