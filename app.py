@@ -11,7 +11,7 @@ ALLOWED_EXTENSIONS = set(['pdf'])
 
 app = Flask(__name__)
 # app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
+app.secret_key = '1242341515136'
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -61,5 +61,4 @@ def upload_file1(company_name):
 #    return render_template('index.html')
 
 if __name__ == '__main__':
-	app.secret_key = '1242341515136'
 	app.run(threaded=True,debug=True)
