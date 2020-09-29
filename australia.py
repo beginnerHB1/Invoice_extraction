@@ -1,3 +1,7 @@
+import re
+import pandas as pd
+import pdftotext
+
 #australia
 def create_json(lst_det):
     if "DATE" in lst_det[0]:
