@@ -1,89 +1,66 @@
-from flask import Flask, flash, request,render_template,  redirect, url_for
+
+from flask import Flask, flash, request,render_template,  redirect, url_for, jsonify
+from flask_cors import CORS
 import json
-import os
-from werkzeug.utils import secure_filename
-from all_functions import *
 from australia import *
+from unicareer import *
+from werkzeug.utils import secure_filename
+import os
 
-try:
-    os.mkdir("data")
-except:
-    pass
-
-UPLOAD_FOLDER = "data/"
+# UPLOAD_FOLDER = "data\\"
 ALLOWED_EXTENSIONS = set(['pdf'])
 
 app = Flask(__name__)
-app.secret_key = '1242341515136'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+cors = CORS(app)
 
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@app.route('/test', methods=['GET', 'POST'])
+def test():
+    return {"response":"working"}
 
-@app.route('/', methods=['GET', 'POST'])
-def upload_file():
+
+@app.route('/<company_name>', methods=['GET', 'POST'])
+def upload_file1(company_name):
     if request.method == 'POST':
-        # check if the post request has the file part
-        # try:
-
         if 'file' not in request.files:
             flash('No file part')
             return redirect(request.url)
         global filename
         file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             flash('file {} saved'.format(file.filename))
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            file.save(filename)
 
-            # file1 = open("/home/senseque/Desktop/new/testing/myfile.txt","w")
-            # file1.write(f"{filename}")
-            # file1.close()
-            z = extract_detail(f"data/{filename}")
-            print(filename)
-            return z
+        if company_name == "australia":
+            try:
+                response = find_details_australia(filename)
+                os.remove(filename)
+                return json.dumps(response, ensure_ascii=False)
+            except Exception as e:
+                os.remove(filename)
+                return {"response":e}
+
+        elif company_name == "unicarriers":
+            # return {"response":f"{filename}"}
+            try:
+                response = extract_detail(filename)
+                os.remove(filename)
+                return response
+            except Exception as e:
+                os.remove(filename)
+                return {"response":e}
     return render_template('home.html')
 
-
-
-@app.route('/australia', methods=['GET', 'POST'])
-def upload_file2():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        # try:
-
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        global filename
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            flash('file {} saved'.format(file.filename))
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-            # file1 = open("/home/senseque/Desktop/new/testing/myfile.txt","w")
-            # file1.write(f"{filename}")
-            # file1.close()
-            z = find_details_australia(f"data/{filename}")
-            # print(filename)
-            return z
-    return render_template('home.html')
-
-
-
+#    return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+	app.secret_key = '1242341515136'
+	app.run(threaded=True,debug=True)
