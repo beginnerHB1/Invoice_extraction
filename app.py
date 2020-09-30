@@ -52,7 +52,7 @@ def upload_file1(company_name):
             try:
                 response = extract_detail(filename)
                 os.remove(filename)
-                return response
+                return json.dumps(response, ensure_ascii=False)
             except Exception as e:
                 os.remove(filename)
                 return {"response":e}
