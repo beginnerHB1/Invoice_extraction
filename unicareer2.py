@@ -248,5 +248,5 @@ def extract_detail(PDF):
         return json_dct
         
     else:
-        return {"response":"please upload unicareers/australia pdfs"}
+        return {"response":"Please upload pdf only for Unicareers/Australia's supplier for POC"}
 
