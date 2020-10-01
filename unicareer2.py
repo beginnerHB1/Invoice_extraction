@@ -181,7 +181,7 @@ def create_json(lst_det):
 
 
 def extract_detail(PDF):
-    json_dct = {"LineDetails":[],"InvoiceAmountDetails":[]}
+    
     bit = False
     header_dct = {}
     invoice_am_dt = {}
@@ -201,22 +201,24 @@ def extract_detail(PDF):
             bit = True
 
     if bit:
+        json_dct = {"supplier":"unicarriers","LineDetails":[],"InvoiceAmountDetails":[]}
         # x = lst
         x = remove_header_footer(lst)
         invoice_index, uac_index = find_invoice_uac_no(x)
         ind = find_invoice_date_table(x)
-        # try:
-        header_dct["invoicenumber"] = x[invoice_index].strip()
-        header_dct["ucaorderno"] = x[uac_index].strip().split()[-1].strip()
-        header_dct["invoicedate"] = x[ind].strip().split()[0].strip()
-        header_dct["customerordernumber"] = x[ind].strip().split()[1].strip()
-        header_dct["paymenttearms"] =  " ".join(x[ind].strip().split()[2:]).strip()
-        header_dct["shipdate"] = x[ind+2].strip().split()[0].strip()
-        header_dct["shipvia"] = x[ind+2].strip().split()[1].strip()
-        header_dct["shipmenttearms"] = x[ind+2].strip().split()[2].strip()
+        try:
+            header_dct["invoicenumber"] = x[invoice_index].strip()
+            header_dct["ucaorderno"] = x[uac_index].strip().split()[-1].strip()
+            header_dct["invoicedate"] = x[ind].strip().split()[0].strip()
+            header_dct["customerordernumber"] = x[ind].strip().split()[1].strip()
+            header_dct["paymenttearms"] =  " ".join(x[ind].strip().split()[2:]).strip()
+            header_dct["shipdate"] = x[ind+2].strip().split()[0].strip()
+            header_dct["shipvia"] = x[ind+2].strip().split()[1].strip()
+            header_dct["shipmenttearms"] = x[ind+2].strip().split()[2].strip()
 
-        json_dct["Header"] = header_dct
-
+            json_dct["Header"] = header_dct
+        except:
+            json_dct["header"] = []
         try:
             address_1, address_2 = add_1_2(x)
             address_1 = "".join(address_1.split("Sold To:")).strip()
@@ -224,24 +226,27 @@ def extract_detail(PDF):
             json_dct["soldto"] = address_1.strip()
             json_dct["shipto"] =  address_2.strip()
         except:
-            json_dct["soldto"] = []
-            json_dct["shipto"] = []
+            json_dct["soldto"] = ""
+            json_dct["shipto"] = ""
 
-        # try:
-        line_details_under_tabe = line_details(x)
-        json_dct["LineDetails"] = line_details_under_tabe
+        try:
+            line_details_under_tabe = line_details(x)
+            json_dct["LineDetails"] = line_details_under_tabe
 
-        dct = invoice_amount_details(x)
-        json_dct["InvoiceAmountDetails"] = {
-            "totalnetsaleusd": dct["TOTAL NET SALE USD"].strip(),
-            "freight": dct["FREIGHT"].strip(),
-            "taxamountusd": dct["TAX AMOUNT USD"],
-            "totalnetamountusd":dct["TOTAL NET AMOUNT USD"],
-            "paymentdueby": dct["PAYMENT DUE BY"]
-        }
+            dct = invoice_amount_details(x)
+            json_dct["InvoiceAmountDetails"] = {
+                "totalnetsaleusd": dct["TOTAL NET SALE USD"].strip(),
+                "freight": dct["FREIGHT"].strip(),
+                "taxamountusd": dct["TAX AMOUNT USD"],
+                "totalnetamountusd":dct["TOTAL NET AMOUNT USD"],
+                "paymentdueby": dct["PAYMENT DUE BY"]
+            }
 
+        except:
+            json_dct["InvoiceAmountDetails"] = {}
 
         return json_dct
+        
     else:
-        return json_dct
+        return {"response":"please upload unicareers/australia pdfs"}
 
