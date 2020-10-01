@@ -45,7 +45,7 @@ def upload_file1(company_name):
                 return json.dumps(response, ensure_ascii=False)
             except Exception as e:
                 os.remove(filename)
-                return json.dumps({"response":e}, ensure_ascii=False)
+                return json.dumps({"response":"please upload australia pdfs"}, ensure_ascii=False)
 
         elif company_name == "unicarriers":
             # return {"response":f"{filename}"}
@@ -55,7 +55,7 @@ def upload_file1(company_name):
                 return json.dumps(response, ensure_ascii=False)
             except Exception as e:
                 os.remove(filename)
-                return json.dumps({"response":e}, ensure_ascii=False)
+                return json.dumps({"response":"please upload unicareers pdfs"}, ensure_ascii=False)
     return render_template('home.html')
 
 #    return render_template('index.html')
