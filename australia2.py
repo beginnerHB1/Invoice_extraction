@@ -78,7 +78,7 @@ def find_table_details(text):
         False
 
 def find_details_australia(pdf):
-    json_dct = {
+    json_dct = {"supplier":"australia",
                 "LineDetails":[],
                 "InvoiceAmountDetails":[]}
     
