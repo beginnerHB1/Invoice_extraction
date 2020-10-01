@@ -92,6 +92,6 @@ def upload_file2():
             except Exception as e:
                 os.remove(filename)
                 return json.dumps({"response":"please upload unicareers/australia pdfs"}, ensure_ascii=False)
-
+	return render_template('home.html')
 if __name__ == '__main__':
 	app.run(threaded=True,debug=True)
